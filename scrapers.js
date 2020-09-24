@@ -1,17 +1,22 @@
 const puppeteer = require('puppeteer');
 
+scrapeProduct("https://www.ebay.ca/itm/Vilano-R2-Commuter-Aluminum-Road-Bike-21-Speed-700c/172975791694");
+
 async function scrapeProduct(url){
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-
     await page.goto(url);
 
-    const [el] = await page.$x('/html/body/div[6]/div[1]/div/table/tbody/tr/td/div/img');
-    const src = await el.getProperty('src');
-    const srcTxt = await src.jsonValue();
+    const [PriceEl] = await page.$x('//*[@id="prcIsum"]');
+    const [imgEl] = await page.$x('//*[@id="icImg"]');
 
-    console.log({srcTxt});
-    browser.close()
+    const rawPrice = await PriceEl.getProperty('textContent');    //this is json
+    const priceTxt = await rawPrice.jsonValue();    //this is a string
+    const price = parseFloat((priceTxt).slice(4));  //this is a float
+
+    const rawImgUrl = await imgEl.getProperty('src');   //this is json
+    const imgUrl = await rawImgUrl.jsonValue();    //this is a string
+
+    console.log({price, imgUrl});
+    await browser.close();
 }
-
-scrapeProduct('https://www.ebay.ca/itm/Real-32GB-64GB-128GB-Cartoon-Animals-USB-2-0-Thumb-Memory-Stick-Flash-Drive-Gift/401620380208?hash=item5d8270aa30:g:fqcAAOSwd2ZbytsC&var=671364717418%27);
